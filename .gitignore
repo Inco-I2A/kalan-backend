@@ -1,0 +1,115 @@
+# ============================================
+# KALAN Backend — Fichiers à ignorer par Git
+# ============================================
+
+# Dépendances
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Environnement & Secrets
+.env
+.env.local
+.env.*.local
+.env.development
+.env.test
+.env.production
+*.pem
+*.key
+
+# Base de données SQLite
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+/data/
+*.sqlite
+*.sqlite3
+
+# Logs
+logs/
+*.log
+log/
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Uploads & Fichiers temporaires
+uploads/
+tmp/
+temp/
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Tests & Couverture
+coverage/
+.nyc_output/
+.jest/
+
+# Build & Distribution
+dist/
+build/
+out/
+
+# IDE & Éditeurs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+*.iml
+
+# OS
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Docker
+docker-compose.override.yml
+
+# Documentation générée
+docs/_build/
+docs/_site/
+
+# Fichiers PDF de test (lourds)
+*.pdf
+!docs/*.pdf
+
+# Images uploadées (OCR)
+uploads/images/
+uploads/pdfs/
+
+# Cache
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
+.vuepress/dist
+.serverless/
+.fusebox/
+.dynamodb/
+.tern-port
+
+# TypeScript
+*.tsbuildinfo
+
+# PM2
+ecosystem.config.js
+.pm2/
+
+# Heroku
+Procfile.local
+
+# Vercel
+.vercel
+
+# Netlify
+.netlify
