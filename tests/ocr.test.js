@@ -70,13 +70,13 @@ describe('📄 OCR & Import', () => {
         expect(res.body.success).toBe(false);
     });
     
-    test('POST /api/ocr/preview avec fichier invalide → 500', async () => {
+    test('POST /api/ocr/preview avec fichier invalide → 400', async () => {
         const res = await request(app)
             .post('/api/ocr/preview')
             .set('Authorization', `Bearer ${token}`)
             .attach('file', Buffer.from('texte simple'), 'test.txt')
-            .expect(500);
-        
+            .expect(400);
+
         expect(res.body.success).toBe(false);
     });
 });

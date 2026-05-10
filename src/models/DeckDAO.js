@@ -44,9 +44,9 @@ class DeckDAO {
             `SELECT d.*, 
                 (SELECT COUNT(*) FROM flashcards WHERE deck_id = d.id) as card_count
              FROM decks d
-             WHERE d.user_id = ? AND d.id IN (SELECT id FROM decks WHERE user_id = ?)
+             WHERE d.user_id = ?
              ORDER BY d.updated_at DESC`,
-            [userId, userId]
+            [userId]
         );
     }
     

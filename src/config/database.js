@@ -209,6 +209,24 @@ async function initDatabase() {
             )
         `);
 
+        // Réponses utilisateur aux questions de quiz (distinct des colonnes optionnelles sur quiz_questions)
+        await run(`
+            CREATE TABLE IF NOT EXISTS quiz_answers (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                quiz_id INTEGER NOT NULL,
+                question_id INTEGER NOT NULL,
+                user_id INTEGER NOT NULL,
+                answer INTEGER,
+                is_correct INTEGER NOT NULL DEFAULT 0,
+                time_spent INTEGER DEFAULT 0,
+                points INTEGER DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (quiz_id) REFERENCES quizzes(id) ON DELETE CASCADE,
+                FOREIGN KEY (question_id) REFERENCES quiz_questions(id) ON DELETE CASCADE,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+        `);
+
         // Badges utilisateurs
         await run(`
             CREATE TABLE IF NOT EXISTS user_badges (

@@ -123,3 +123,4 @@ class AuthService {
 }
 
 module.exports = AuthService;
+module.exports.generateToken = AuthService.generateToken.bind(AuthService);

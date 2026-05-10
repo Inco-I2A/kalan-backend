@@ -1,37 +1,42 @@
 // tests/quiz-timed.test.js
 const request = require('supertest');
 const app = require('../src/app');
-const db = require('../src/config/database');
+const { run } = require('../src/config/database');
 const UserDAO = require('../src/models/UserDAO');
 const FlashcardDAO = require('../src/models/FlashcardDAO');
 const DeckDAO = require('../src/models/DeckDAO');
+const SchoolDAO = require('../src/models/SchoolDAO');
 const { generateToken } = require('../src/services/authService');
 
 // Helpers inline (pas de fichier ./helpers)
 async function setupTestDB() {
-    // La base est déjà initialisée par database.js au require
-    // On nettoie juste les tables de test
-    await db.run(`DELETE FROM quiz_answers WHERE quiz_id IN (SELECT id FROM quizzes WHERE title LIKE 'Test%')`);
-    await db.run(`DELETE FROM quiz_questions WHERE quiz_id IN (SELECT id FROM quizzes WHERE title LIKE 'Test%')`);
-    await db.run(`DELETE FROM quizzes WHERE title LIKE 'Test%'`);
+    await run(`DELETE FROM quiz_answers WHERE user_id IN (SELECT id FROM users WHERE pseudo LIKE 'testuser_%')`);
+    await run(`DELETE FROM quiz_questions WHERE quiz_id IN (
+        SELECT id FROM quizzes WHERE user_id IN (SELECT id FROM users WHERE pseudo LIKE 'testuser_%')
+    )`);
+    await run(`DELETE FROM quizzes WHERE user_id IN (SELECT id FROM users WHERE pseudo LIKE 'testuser_%')`);
+    await run(`DELETE FROM flashcards WHERE user_id IN (SELECT id FROM users WHERE pseudo LIKE 'testuser_%')`);
+    await run(`DELETE FROM decks WHERE user_id IN (SELECT id FROM users WHERE pseudo LIKE 'testuser_%')`);
+    await run(`DELETE FROM users WHERE pseudo LIKE 'testuser_%'`);
+    await run(`DELETE FROM classes WHERE name = 'Test Class Quiz'`);
+    await run(`DELETE FROM schools WHERE name = 'Test School Quiz'`);
 }
 
 async function createTestUser() {
-    const school = await db.run(
-        `INSERT INTO schools (name, country, city, created_at) VALUES (?, ?, ?, datetime('now'))`,
-        ['Test School', 'Burkina Faso', 'Ouagadougou']
-    );
-    
-    const user = await UserDAO.create({
-        school_id: school.lastID,
+    const school = await SchoolDAO.createSchool({ name: 'Test School Quiz', city: 'Ouagadougou' });
+    const classe = await SchoolDAO.createClass({
+        school_id: school.id,
+        name: 'Test Class Quiz',
+        level: 'college'
+    });
+
+    return UserDAO.create({
+        school_id: school.id,
+        class_id: classe.id,
         firstName: 'Test',
         lastName: 'User',
-        pseudo: 'testuser_' + Date.now(),
-        password: 'password123',
-        class: '6ème A',
-        language: 'fr'
+        pseudo: 'testuser_' + Date.now()
     });
-    return user;
 }
 
 async function createTestFlashcards(userId, count = 5) {
@@ -45,10 +50,11 @@ async function createTestFlashcards(userId, count = 5) {
     const cards = [];
     for (let i = 0; i < count; i++) {
         const card = await FlashcardDAO.create({
+            user_id: userId,
             deck_id: deck.id,
             front: `Question ${i + 1}`,
             back: `Réponse ${i + 1}`,
-            tags: 'test'
+            category: 'test'
         });
         cards.push(card);
     }

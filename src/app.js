@@ -11,6 +11,7 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger');
 require('dotenv').config();
 
+const multer = require('multer');
 const { authRoutes, userRoutes, schoolRoutes, deckRoutes, quizRoutes, ocrRoutes } = require('./routes');
 
 const app = express();
@@ -119,9 +120,16 @@ app.use((req, res, next) => {
 
 app.use((err, req, res, next) => {
     console.error('❌ Erreur serveur:', err);
-    
+
+    if (err instanceof multer.MulterError) {
+        return res.status(400).json({
+            success: false,
+            error: err.message || 'Fichier invalide'
+        });
+    }
+
     const isDev = process.env.NODE_ENV === 'development';
-    
+
     res.status(err.status || 500).json({
         success: false,
         error: err.message || 'Erreur interne du serveur',

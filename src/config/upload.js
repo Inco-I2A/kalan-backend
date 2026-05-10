@@ -7,7 +7,7 @@ const multer = require('multer');
 // Stockage temporaire en mémoire (pour traitement OCR direct)
 const storage = multer.memoryStorage();
 
-// Filtre : PDF et images uniquement
+// Filtre : PDF et images uniquement (MulterError → handler HTTP 400 dans app.js)
 const fileFilter = (req, file, cb) => {
     const allowedMimes = [
         'application/pdf',
@@ -15,11 +15,13 @@ const fileFilter = (req, file, cb) => {
         'image/png',
         'image/webp'
     ];
-    
+
     if (allowedMimes.includes(file.mimetype)) {
         cb(null, true);
     } else {
-        cb(new Error('Format non supporte. Utilisez : PDF, JPG, PNG, WEBP'), false);
+        const err = new multer.MulterError('LIMIT_UNEXPECTED_FILE', file.fieldname);
+        err.message = 'Format non supporte. Utilisez : PDF, JPG, PNG, WEBP';
+        cb(err, false);
     }
 };
 

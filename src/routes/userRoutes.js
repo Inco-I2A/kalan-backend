@@ -48,37 +48,6 @@ router.get('/me', authMiddleware, async (req, res, next) => {
 
 /**
  * @swagger
- * /api/users/{uuid}/stats:
- *   get:
- *     summary: Stats publiques d'un utilisateur
- *     tags: [Utilisateurs]
- */
-router.get('/:uuid/stats', async (req, res, next) => {
-    try {
-        const { uuid } = req.params;
-        const stats = await UserDAO.getStats(uuid);
-        
-        if (!stats) {
-            return res.status(404).json({
-                success: false,
-                error: 'Utilisateur non trouvé'
-            });
-        }
-        
-        const { total_points, xp, streak_days, ...publicStats } = stats;
-        
-        res.json({
-            success: true,
-            user: publicStats
-        });
-        
-    } catch (err) {
-        next(err);
-    }
-});
-
-/**
- * @swagger
  * /api/users/leaderboard:
  *   get:
  *     summary: Classement global
@@ -110,6 +79,37 @@ router.get('/leaderboard', async (req, res, next) => {
                 school_name: u.school_name,
                 class_name: u.class_name
             }))
+        });
+        
+    } catch (err) {
+        next(err);
+    }
+});
+
+/**
+ * @swagger
+ * /api/users/{uuid}/stats:
+ *   get:
+ *     summary: Stats publiques d'un utilisateur
+ *     tags: [Utilisateurs]
+ */
+router.get('/:uuid/stats', async (req, res, next) => {
+    try {
+        const { uuid } = req.params;
+        const stats = await UserDAO.getStats(uuid);
+        
+        if (!stats) {
+            return res.status(404).json({
+                success: false,
+                error: 'Utilisateur non trouvé'
+            });
+        }
+        
+        const { total_points, xp, streak_days, ...publicStats } = stats;
+        
+        res.json({
+            success: true,
+            user: publicStats
         });
         
     } catch (err) {

@@ -1,12 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const { authenticateToken } = require('../middleware/auth');
+const { authMiddleware } = require('../middleware');
+const { UserDAO } = require('../models');
 const QuizDAO = require('../models/QuizDAO');
 
 // POST /api/quizzes/timed — Créer un quiz chronométré
-router.post('/timed', authenticateToken, async (req, res, next) => {
+router.post('/timed', authMiddleware, async (req, res, next) => {
     try {
-        const userId = req.user.id;
+        const user = await UserDAO.findByUuid(req.user.uuid);
+        if (!user) {
+            return res.status(401).json({ success: false, error: 'Utilisateur non trouvé' });
+        }
+        const userId = user.id;
         const { flashcard_ids, title } = req.body;
 
         if (!flashcard_ids || !Array.isArray(flashcard_ids) || flashcard_ids.length === 0) {
@@ -15,7 +20,7 @@ router.post('/timed', authenticateToken, async (req, res, next) => {
 
         const quiz = await QuizDAO.create({
             user_id: userId,
-            title: title || `Quiz ${new Date().toLocaleDateString()}`,
+            deck_id: null,
             type: 'timed',
             status: 'active'
         });
@@ -42,7 +47,7 @@ router.post('/timed', authenticateToken, async (req, res, next) => {
             data: {
                 quiz: {
                     id: quiz.uuid,
-                    title: quiz.title,
+                    title: title || `Quiz ${new Date().toLocaleDateString()}`,
                     type: quiz.type,
                     status: quiz.status,
                     total_questions: flashcards.length,
@@ -64,10 +69,14 @@ router.post('/timed', authenticateToken, async (req, res, next) => {
 });
 
 // POST /api/quizzes/:uuid/answer-timed — Répondre
-router.post('/:uuid/answer-timed', authenticateToken, async (req, res, next) => {
+router.post('/:uuid/answer-timed', authMiddleware, async (req, res, next) => {
     try {
         const { uuid } = req.params;
-        const userId = req.user.id;
+        const user = await UserDAO.findByUuid(req.user.uuid);
+        if (!user) {
+            return res.status(401).json({ success: false, error: 'Utilisateur non trouvé' });
+        }
+        const userId = user.id;
         const { question_id, answer, time_spent } = req.body;
 
         if (question_id === undefined || answer === undefined) {
@@ -132,10 +141,14 @@ router.post('/:uuid/answer-timed', authenticateToken, async (req, res, next) => 
 });
 
 // GET /api/quizzes/:uuid — État du quiz
-router.get('/:uuid', authenticateToken, async (req, res, next) => {
+router.get('/:uuid', authMiddleware, async (req, res, next) => {
     try {
         const { uuid } = req.params;
-        const userId = req.user.id;
+        const user = await UserDAO.findByUuid(req.user.uuid);
+        if (!user) {
+            return res.status(401).json({ success: false, error: 'Utilisateur non trouvé' });
+        }
+        const userId = user.id;
 
         const quiz = await QuizDAO.findByUuid(uuid);
         if (!quiz || quiz.user_id !== userId) {
@@ -151,7 +164,7 @@ router.get('/:uuid', authenticateToken, async (req, res, next) => {
             data: {
                 quiz: {
                     id: quiz.uuid,
-                    title: quiz.title,
+                    title: null,
                     status: quiz.status,
                     total_questions: progress.total,
                     answered_questions: progress.answered
@@ -173,10 +186,14 @@ router.get('/:uuid', authenticateToken, async (req, res, next) => {
 });
 
 // GET /api/quizzes/:uuid/results — Résultats
-router.get('/:uuid/results', authenticateToken, async (req, res, next) => {
+router.get('/:uuid/results', authMiddleware, async (req, res, next) => {
     try {
         const { uuid } = req.params;
-        const userId = req.user.id;
+        const user = await UserDAO.findByUuid(req.user.uuid);
+        if (!user) {
+            return res.status(401).json({ success: false, error: 'Utilisateur non trouvé' });
+        }
+        const userId = user.id;
 
         const quiz = await QuizDAO.findByUuid(uuid);
         if (!quiz || quiz.user_id !== userId) {

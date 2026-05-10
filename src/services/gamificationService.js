@@ -118,11 +118,11 @@ class GamificationService {
         
         const { get } = require('../config/database');
         const quiz = await get(`
-            SELECT q.*, COUNT(qq.id) as total_q, SUM(CASE WHEN qq.is_correct = 1 THEN 1 ELSE 0 END) as correct_q
+            SELECT q.*,
+                (SELECT COUNT(*) FROM quiz_questions WHERE quiz_id = q.id) as total_q,
+                (SELECT COUNT(*) FROM quiz_answers WHERE quiz_id = q.id AND is_correct = 1) as correct_q
             FROM quizzes q
-            LEFT JOIN quiz_questions qq ON q.id = qq.quiz_id
             WHERE q.uuid = ?
-            GROUP BY q.id
         `, [quizUuid]);
         
         if (!quiz) throw new Error('Quiz non trouvé');
